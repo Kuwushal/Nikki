@@ -60,7 +60,7 @@ export default function Sidebar({ dark, setDark }) {
               <div style={{ position: 'absolute', top: 0, left: 0, width: 14, height: 14, background: 'var(--blue)', borderRadius: 3 }} />
               <div style={{ position: 'absolute', bottom: 0, right: 0, width: 14, height: 14, background: dark ? '#3F3F46' : '#C4C4CC', borderRadius: 3 }} />
             </div>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.3px' }}>Assistant</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.3px' }}>Nikki</span>
           </div>
           <button onClick={() => setDark(d => !d)} className="btn-icon" style={{ padding: 5 }}>
             {dark ? <Sun size={13} /> : <Moon size={13} />}
@@ -91,7 +91,7 @@ export default function Sidebar({ dark, setDark }) {
             <div style={{ position: 'absolute', top: 0, left: 0, width: 12, height: 12, background: 'var(--blue)', borderRadius: 2 }} />
             <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, background: dark ? '#3F3F46' : '#C4C4CC', borderRadius: 2 }} />
           </div>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.3px' }}>Assistant</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.3px' }}>Nikki</span>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={() => setDark(d => !d)} className="btn-icon">{dark ? <Sun size={14} /> : <Moon size={14} />}</button>
