@@ -1,0 +1,129 @@
+Personal Assistant System Plan
+Core Modules
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+
+Dashboard
+Calendar
+Todo
+Notes
+Journal
+Goals
+Habit Tracker
+Finance
+Learning Hub
+Bookmarks
+Personal Wiki
+Entertainment
+Analytics
+Settings
+
+Time Tools
+•
+•
+•
+•
+•
+•
+
+Live clock
+Stopwatch
+Countdown
+Pomodoro
+World clock
+Alarm/reminders
+
+Dashboard
+•
+•
+•
+•
+•
+•
+
+Today's tasks
+Upcoming events
+Quick add
+Progress summary
+Weather (optional)
+Recent notes
+
+Tech Stack
+•
+•
+
+React + Vite
+
+•
+•
+
+React Router
+
+Tailwind CSS
+
+Dexie.js (IndexedDB)
+
+•
+•
+•
+
+Lucide React
+Recharts
+Vercel
+
+Storage
+•
+•
+•
+•
+•
+
+IndexedDB (browser storage)
+No backend required
+Works offline
+Data persists on same browser/device
+No cross-device sync
+
+Future Features
+•
+•
+•
+•
+•
+•
+
+AI assistant
+Calendar sync
+Email integration
+File vault
+Universal search
+PWA install
+
+Free Stack
+•
+•
+•
+•
+•
+•
+
+React
+Vercel Free
+IndexedDB
+Tailwind CSS
+Lucide React
+Recharts
+
+

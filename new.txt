@@ -1,0 +1,711 @@
+/* ============================================================
+   ANIME LIBRARY
+   A native-macOS-feeling reskin of MyAnimeList, built entirely
+   with CSS against the existing MAL markup/classes. No class
+   names are invented — everything below targets selectors that
+   exist in the stock MAL stylesheet.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg:            #F5F5F7;
+    --sidebar:       #ECECEC;
+    --surface:       #FFFFFF;
+    --text:          #1D1D1F;
+    --text-secondary:#6E6E73;
+    --separator:     #D2D2D7;
+    --accent:        #0A84FF;
+    --green:         #30B94D;
+    --orange:        #FF9F0A;
+    --yellow:        #FFD60A;
+    --red:           #FF453A;
+    --radius-s:      6px;
+    --radius-m:      10px;
+    --radius-l:      14px;
+    --shadow-window: 0 20px 50px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-row:    0 1px 4px rgba(0,0,0,0.08);
+    --sidebar-width: 220px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:             #1C1C1E;
+        --sidebar:        #2C2C2E;
+        --surface:        #3A3A3C;
+        --text:           #FFFFFF;
+        --text-secondary: #AEAEB2;
+        --separator:      #48484A;
+        --shadow-window:  0 20px 50px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    }
+}
+
+/* ============================================================
+   1. BASE / RESET
+   ============================================================ */
+body {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+    font-family: var(--font);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    padding-left: var(--sidebar-width); /* room for the fixed sidebar */
+    box-sizing: border-box;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+td { line-height: 1.6em; }
+
+#footer-block {
+    background-color: var(--surface);
+    color: var(--text-secondary);
+    border-top: 1px solid var(--separator);
+    font-family: var(--font);
+    margin-left: var(--sidebar-width);
+}
+#copyright, #recaptcha-terms { color: var(--text-secondary); }
+#recaptcha-terms a { color: var(--text-secondary); }
+.grecaptcha-badge { visibility: hidden; }
+
+/* ============================================================
+   2. SIDEBAR  (repurposed .list-menu-float)
+   Apple's Finder/Music-style source list, fixed to the left edge.
+   ============================================================ */
+.list-menu-float {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--sidebar);
+    border: none;
+    border-right: 1px solid var(--separator);
+    box-shadow: none;
+    padding-top: 52px; /* clears the traffic-light toolbar area */
+    z-index: 10;
+    overflow-y: auto;
+}
+
+.list-menu-float .icon-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 34px;
+    padding: 0 14px;
+    margin: 1px 0;
+    background-color: transparent !important;
+    border-radius: var(--radius-s);
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
+}
+.list-menu-float .icon-menu:not(.profile):hover {
+    background-color: rgba(10, 132, 255, 0.12);
+    width: 100%; /* override stock expansion animation */
+}
+
+.list-menu-float .icon-menu svg.icon {
+    position: static;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    fill: var(--accent);
+    margin-right: 10px;
+}
+.list-menu-float .icon-menu:hover svg.icon { fill: var(--accent); }
+
+/* Force the label to always be visible (stock CSS reveals it only on hover) */
+.list-menu-float .icon-menu .text {
+    position: static;
+    display: block;
+    width: auto;
+    opacity: 1;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+.list-menu-float .icon-menu.profile {
+    height: 56px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--separator);
+    border-radius: 0;
+}
+
+/* Settings flyout, reworked as a small native popover */
+.list-menu-float .icon-menu.setting .text {
+    position: static;
+    height: auto;
+    width: auto;
+    opacity: 1;
+}
+.list-menu-float .icon-menu.setting:hover .text {
+    width: auto;
+    height: auto;
+}
+.list-menu-float .icon-menu.setting:hover .text .link-list-setting,
+.list-menu-float .icon-menu.setting:hover .text .link-style-setting {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    line-height: 30px;
+    background: transparent;
+    color: var(--text-secondary);
+    padding-left: 26px;
+    font-size: 12px;
+}
+
+/* ============================================================
+   3. TOOLBAR / HEADER
+   Traffic lights + centered title + translucent bar, à la
+   Finder/Books toolbars.
+   ============================================================ */
+.header {
+    position: relative;
+    width: calc(100% - var(--sidebar-width));
+    max-width: 1060px;
+    height: 52px;
+    margin: 0 auto;
+    background-color: rgba(245, 245, 247, 0.8);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--separator);
+}
+
+/* Traffic-light window controls, faked with box-shadow dots */
+.header .header-title {
+    position: relative;
+    top: 0;
+    left: 60px;
+    width: auto;
+    height: 52px;
+    text-indent: 0;
+    background-image: none !important;
+    display: flex;
+    align-items: center;
+}
+.header .header-title::before {
+    content: "";
+    position: absolute;
+    left: -44px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #FF5F57;
+    box-shadow: 20px 0 0 #FEBC2E, 40px 0 0 #28C840;
+    transform: translateY(-50%);
+}
+.header .header-title::after {
+    content: "Anime Library";
+    font-family: var(--font);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.header a { color: var(--text); }
+.header a:hover { color: var(--accent); text-decoration: none; }
+
+.header .header-menu {
+    top: 14px;
+    right: 16px;
+}
+.header .header-menu .btn-menu {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+}
+.header .header-menu.other { top: 12px; }
+
+.header .header-info {
+    position: absolute;
+    top: 16px;
+    right: 90px;
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.header .username {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.header .header-menu .list-menu {
+    top: 40px;
+    background-color: var(--surface);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-window);
+    overflow: hidden;
+}
+.header .header-menu .list-menu .icon-menu {
+    color: var(--text);
+    height: 34px;
+}
+.header .header-menu .list-menu .icon-menu:hover {
+    background-color: rgba(10,132,255,0.12);
+}
+.header .header-menu .list-menu .icon-menu svg.icon { fill: var(--accent); }
+.header .header-menu .list-menu .icon-menu .text { color: var(--text); }
+
+/* ============================================================
+   4. WINDOW / CONTENT SURFACE
+   ============================================================ */
+.list-container {
+    width: calc(100% - var(--sidebar-width));
+    max-width: 1060px;
+    margin: 24px auto;
+    background-color: var(--surface) !important;
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-window);
+    overflow: hidden;
+}
+
+.cover-block {
+    background-color: var(--surface);
+    padding-top: 12px;
+}
+.cover-block .image-container img {
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-row);
+}
+.cover-block .image-container .btn-list-setting {
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 999px;
+    color: #FFFFFF !important;
+    border: none;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+/* ============================================================
+   5. STATUS TABS  →  Apple segmented control
+   ============================================================ */
+.status-menu-container {
+    background-color: var(--bg);
+    border-bottom: 1px solid var(--separator);
+    padding: 8px 0;
+}
+
+.status-menu-container .status-menu {
+    border-spacing: 4px 0;
+    background-color: var(--sidebar);
+    border-radius: var(--radius-s);
+    padding: 2px;
+}
+.status-menu-container .status-menu .status-button {
+    padding: 6px 16px;
+    border-radius: 7px;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.status-menu-container .status-menu .status-button:hover {
+    color: var(--text);
+}
+.status-menu-container .status-menu .status-button.on {
+    background-color: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-row);
+    font-weight: 600;
+}
+.status-menu-container .status-menu .status-button:after {
+    display: none; /* no underline — the segmented control shows state via background */
+}
+
+/* Spotlight-style search capsule */
+.status-menu-container .search-container {
+    top: 6px;
+}
+.status-menu-container .search-container #search-button {
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+.status-menu-container .search-container #search-button:hover { color: var(--accent); }
+.status-menu-container .search-container #search-box.open {
+    width: 200px;
+}
+.status-menu-container .search-container #search-box input {
+    background-color: var(--sidebar);
+    border: 1px solid var(--separator);
+    border-radius: 999px;
+    padding: 4px 12px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+}
+.status-menu-container .search-container #search-box input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* ============================================================
+   6. LIST BLOCK / CHAPTER HEADINGS  →  Apple Books section titles
+   ============================================================ */
+.list-block {
+    background-color: var(--surface);
+    padding-top: 4px;
+}
+
+.list-unit .list-status-title {
+    background-color: var(--surface) !important;
+    border-bottom: 1px solid var(--separator);
+    padding: 16px 16px 10px;
+    width: auto;
+    box-sizing: border-box;
+}
+.list-unit .list-status-title .text {
+    display: block;
+    width: auto;
+    height: auto;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--text);
+    text-align: left;
+}
+.list-unit .list-status-title .stats {
+    position: static;
+    display: block;
+    height: auto;
+    line-height: normal;
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.list-unit .list-status-title .stats a { color: var(--accent); }
+
+.list-unit .list-stats {
+    background-color: var(--bg);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--separator);
+}
+
+/* ============================================================
+   7. TABLE HEADER  →  Finder column headings
+   ============================================================ */
+.list-table .list-table-header .header-title {
+    background-image: none;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--separator);
+    color: var(--text-secondary);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    height: 30px;
+}
+.list-table .list-table-header .header-title .link,
+.list-table .list-table-header .header-title .link.sort {
+    color: var(--text-secondary);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 600;
+}
+.list-table .list-table-header .header-title .link.sort:hover { color: var(--accent); }
+.list-table .list-table-header .header-title .sort-icon { color: var(--accent); }
+
+/* ============================================================
+   8. ROWS  →  Finder list rows
+   ============================================================ */
+.list-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.list-table .list-table-data {
+    background-color: var(--surface);
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.list-table .list-table-data:hover {
+    background-color: rgba(10, 132, 255, 0.10);
+    box-shadow: var(--shadow-row);
+    transform: translateY(-1px);
+    position: relative;
+    z-index: 1;
+}
+
+.list-table .list-table-data .data {
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--separator);
+    color: var(--text);
+    font-family: var(--font);
+}
+.list-table .list-table-data .data a { color: var(--text) !important; }
+.list-table .list-table-data a:not(.edit-disabled):hover { color: var(--accent) !important; }
+.list-table .list-table-data a.edit-disabled { color: var(--text-secondary) !important; }
+
+.list-table .list-table-data .data.image .image {
+    border: none;
+    border-radius: var(--radius-s);
+    box-shadow: var(--shadow-row);
+}
+
+.list-table .list-table-data .data.title .link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text) !important;
+}
+.list-table .list-table-data .data.title .rewatching,
+.list-table .list-table-data .data.title .rereading,
+.list-table .list-table-data .data.title .content-status {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+.list-table .list-table-data .data.title .notes textarea,
+.list-table .list-table-data .data.tags textarea {
+    background-color: var(--bg);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-s);
+    color: var(--text);
+}
+.list-table .list-table-data .data.title .notes .edit,
+.list-table .list-table-data .data.tags .edit {
+    color: var(--accent) !important;
+    font-size: 11px;
+}
+
+.list-table .list-table-data .data.tags {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+/* ------------------------------------------------------------
+   Status color bar reworked into a Finder-tag-style capsule.
+   The stock CSS hides `.text` inside `.data.status` — this
+   theme un-hides it and turns the whole cell into a small
+   colored pill instead of a bare 4px stripe.
+   ------------------------------------------------------------ */
+.list-table .list-table-data .data.status {
+    width: auto;
+    min-width: 8px;
+    padding: 0;
+    background-color: transparent !important;
+    text-align: center;
+    vertical-align: middle;
+}
+.list-table .list-table-data .data.status .text {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+.list-table .list-table-data .data.status.reading .text,
+.list-table .list-table-data .data.status.watching .text {
+    background-color: var(--accent);
+}
+.list-table .list-table-data .data.status.completed .text {
+    background-color: var(--green);
+}
+.list-table .list-table-data .data.status.plantoread .text,
+.list-table .list-table-data .data.status.plantowatch .text {
+    background-color: var(--orange);
+}
+.list-table .list-table-data .data.status.onhold .text {
+    background-color: var(--yellow);
+    color: #4A3C00;
+}
+.list-table .list-table-data .data.status.dropped .text {
+    background-color: var(--red);
+}
+
+/* Score — bold accent numeral, no extra decoration */
+.list-table .list-table-data .data.score .link {
+    font-weight: 700;
+    color: var(--accent) !important;
+    font-size: 13px;
+}
+
+/* Type / episode / chapter / volume / year counters → soft capsule badges */
+.list-table .list-table-data .data.type,
+.list-table .list-table-data .data.progress,
+.list-table .list-table-data .data.chapters,
+.list-table .list-table-data .data.volumes,
+.list-table .list-table-data .data.rated {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+.list-table .list-table-data .data.type .link,
+.list-table .list-table-data .data.progress .link {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: var(--sidebar);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--text) !important;
+}
+
+.list-table .list-table-data .data.started,
+.list-table .list-table-data .data.finished,
+.list-table .list-table-data .data.days,
+.list-table .list-table-data .data.storage,
+.list-table .list-table-data .data.retail,
+.list-table .list-table-data .data.priority,
+.list-table .list-table-data .data.popularity {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.list-table .list-table-data .data .icon-watch,
+.list-table .list-table-data .data .icon-watch-pv {
+    opacity: 0.55;
+}
+.list-table .list-table-data .data .icon-watch:hover,
+.list-table .list-table-data .data .icon-watch-pv:hover {
+    opacity: 1;
+}
+
+/* Expandable "more info" drawer → inline detail panel */
+.list-table .more-info {
+    background-color: var(--bg);
+    border-bottom: 1px solid var(--separator);
+}
+.list-table .more-info .more-content {
+    color: var(--text);
+    font-size: 12px;
+}
+.list-table .more-info .more-content a { color: var(--accent); }
+
+.list-unit .loading-space {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* ============================================================
+   9. ADVANCED OPTIONS  →  native macOS popover / sheet
+   ============================================================ */
+#advanced-options {
+    background-color: var(--surface);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-window);
+    color: var(--text);
+    font-family: var(--font);
+}
+
+#advanced-options .advanced-options-header {
+    border-bottom: 1px solid var(--separator);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+#advanced-options .advanced-options-header .description {
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+#advanced-options select {
+    background-color: var(--bg);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-s);
+    color: var(--text);
+    font-family: var(--font);
+}
+#advanced-options select:disabled {
+    color: var(--text-secondary);
+    background-color: var(--bg);
+}
+
+#advanced-options input[type=text] {
+    background-color: var(--bg);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-s);
+    color: var(--text);
+    font-family: var(--font);
+}
+
+#advanced-options .sort-widget input[type=radio] + label {
+    background-color: var(--bg);
+    border: 1px solid var(--separator);
+    border-radius: 999px;
+    color: var(--text);
+}
+#advanced-options .sort-widget input[type=radio]:checked + label {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #FFFFFF;
+}
+#advanced-options .sort-widget input[type=radio]:disabled + label {
+    border-color: var(--separator);
+    color: var(--text-secondary);
+}
+
+#advanced-options .sort-widget .widget-header,
+#advanced-options .filter-widget .widget-header {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+#advanced-options .advanced-options-button {
+    border-top: 1px solid var(--separator);
+}
+#advanced-options .btn-apply,
+#advanced-options .btn-clear {
+    background-color: var(--accent);
+    border-radius: var(--radius-s);
+    font-family: var(--font);
+    font-weight: 600;
+}
+#advanced-options .btn-apply:hover,
+#advanced-options .btn-clear:hover {
+    background-color: #0071E3;
+}
+
+/* ============================================================
+   10. MODALS
+   ============================================================ */
+.mal-modal-content {
+    background-color: var(--surface) !important;
+    color: var(--text) !important;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--separator);
+    box-shadow: var(--shadow-window);
+    font-family: var(--font);
+}
+.mal-modal .mal-modal-dialog .mal-modal-content button.btn-close {
+    color: var(--text-secondary) !important;
+}
+.mal-modal .mal-modal-dialog .mal-modal-content .mal-modal-body .modal-vote-score li a {
+    border: 1px solid var(--separator) !important;
+    border-radius: var(--radius-s);
+    color: var(--text);
+}
+.mal-modal .mal-modal-dialog .mal-modal-content .mal-modal-body .modal-vote-score li a:hover {
+    background-color: var(--accent) !important;
+    color: #FFFFFF;
+}
+.mal-modal .mal-modal-dialog .mal-modal-content .mal-modal-body .modal-vote-score-footer a:hover {
+    background-color: rgba(10,132,255,0.10) !important;
+}
+
+/* ============================================================
+   11. FINE DETAILS
+   ============================================================ */
+::selection {
+    background-color: var(--accent);
+    color: #FFFFFF;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background-color: transparent; }
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.25);
+    border-radius: 999px;
+}
