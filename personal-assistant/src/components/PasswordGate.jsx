@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
+const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
 export default function PasswordGate({ onUnlock }) {
   const [dots, setDots] = useState(0);
   const [error, setError] = useState(false);
@@ -7,42 +9,56 @@ export default function PasswordGate({ onUnlock }) {
   const [blink, setBlink] = useState(true);
   const valueRef = useRef('');
   const unlockingRef = useRef(false);
+  const inputRef = useRef();
 
   useEffect(() => {
     const t = setInterval(() => setBlink(b => !b), 530);
     return () => clearInterval(t);
   }, []);
 
+  // Auto-focus hidden input on mobile to trigger keyboard
+  useEffect(() => {
+    if (isMobile() && inputRef.current) inputRef.current.focus();
+  }, []);
+
+  function submit(val) {
+    if (unlockingRef.current) return;
+    if (val === 'oreimo@567') {
+      unlockingRef.current = true;
+      setUnlocking(true);
+      setTimeout(onUnlock, 1400);
+    } else {
+      setError(true);
+      valueRef.current = '';
+      setDots(0);
+      if (inputRef.current) inputRef.current.value = '';
+      setTimeout(() => setError(false), 1000);
+    }
+  }
+
+  // Desktop — global keydown
   useEffect(() => {
     const handler = (e) => {
+      if (isMobile()) return; // let mobile input handle it
       if (unlockingRef.current) return;
-
       if (e.key === 'Enter') {
-        if (valueRef.current === 'oreimo@567') {
-          unlockingRef.current = true;
-          setUnlocking(true);
-          setTimeout(onUnlock, 1400);
-        } else {
-          setError(true);
-          valueRef.current = '';
-          setDots(0);
-          setTimeout(() => setError(false), 1000);
-        }
+        submit(valueRef.current);
       } else if (e.key === 'Backspace') {
         valueRef.current = valueRef.current.slice(0, -1);
         setDots(valueRef.current.length);
       } else if (e.key.length === 1) {
-        valueRef.current = valueRef.current + e.key;
+        valueRef.current += e.key;
         setDots(valueRef.current.length);
       }
     };
-
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onUnlock]);
 
   return (
-    <div style={{
+    <div
+      onClick={() => { if (isMobile() && inputRef.current) inputRef.current.focus(); }}
+      style={{
       minHeight: '100vh',
       background: '#0e0e10',
       display: 'flex',
@@ -52,6 +68,22 @@ export default function PasswordGate({ onUnlock }) {
       position: 'relative',
       overflow: 'hidden',
     }}>
+
+      {/* Hidden input for mobile keyboard */}
+      <input
+        ref={inputRef}
+        type="password"
+        autoComplete="off"
+        onChange={e => {
+          valueRef.current = e.target.value;
+          setDots(e.target.value.length);
+        }}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit(valueRef.current); } }}
+        style={{
+          position: 'fixed', opacity: 0, pointerEvents: isMobile() ? 'auto' : 'none',
+          width: 1, height: 1, top: 0, left: 0, zIndex: -1,
+        }}
+      />
 
       {/* Radial glow */}
       <div style={{
@@ -151,7 +183,7 @@ export default function PasswordGate({ onUnlock }) {
         fontSize: 10, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.08)',
         fontFamily: 'monospace', whiteSpace: 'nowrap',
       }}>
-        type password · press enter
+        type password · tap screen · press enter
       </div>
 
       <style>{`

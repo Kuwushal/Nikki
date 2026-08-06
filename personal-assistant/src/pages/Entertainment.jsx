@@ -16,6 +16,7 @@ export default function Entertainment() {
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState(null);
   const [typeFilter, setTypeFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   const load = () => db.entertainment.toArray().then(setItems);
   useEffect(() => { load(); }, []);
@@ -47,8 +48,17 @@ export default function Entertainment() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Entertainment</h1>
-
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+        <h1 className="page-title" style={{ margin: 0 }}>Entertainment</h1>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {['All', ...statuses].map(s => (
+            <button key={s} onClick={() => setStatusFilter(s)} className={`chip${statusFilter === s ? ' active' : ''}`}
+              style={statusFilter === s && s !== 'All' ? { background: statusColors[s], borderColor: 'transparent' } : {}}>
+              {s === 'All' ? 'All' : s}
+            </button>
+          ))}
+        </div>
+      </div>
       {/* Add / Edit form */}
       <div className="card-flat" style={{ padding: '16px 18px', marginBottom: 18, borderLeft: editId ? '3px solid var(--orange)' : undefined }}>
         {editId && (
@@ -86,7 +96,7 @@ export default function Entertainment() {
 
       {/* Sections */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-        {statuses.map(status => {
+        {statuses.filter(s => statusFilter === 'All' || statusFilter === s).map(status => {
           const sectionItems = byType.filter(i => i.status === status);
           const color = statusColors[status];
           const bg = statusBg[status];
