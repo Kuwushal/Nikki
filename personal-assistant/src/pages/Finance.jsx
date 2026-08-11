@@ -42,9 +42,9 @@ export default function Finance() {
         marginBottom: 22, overflow: 'hidden',
       }}>
         {[
-          { label: 'Balance', value: balance, color: balance >= 0 ? 'var(--green)' : 'var(--red)', prefix: balance < 0 ? '-$' : '$' },
-          { label: 'Income', value: income, color: 'var(--green)', prefix: '+$' },
-          { label: 'Expenses', value: expenses, color: 'var(--red)', prefix: '-$' },
+          { label: 'Balance', value: balance, color: balance >= 0 ? 'var(--green)' : 'var(--red)', prefix: balance < 0 ? '-Rs. ' : 'Rs. ' },
+          { label: 'Income', value: income, color: 'var(--green)', prefix: '+Rs. ' },
+          { label: 'Expenses', value: expenses, color: 'var(--red)', prefix: '-Rs. ' },
         ].map((s, i) => (
           <div key={s.label} style={{ padding: '18px 22px', borderRight: i < 2 ? '1px solid var(--border)' : 'none' }}>
             <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-3)' }}>{s.label}</p>
@@ -103,7 +103,7 @@ export default function Finance() {
               <p style={{ margin: '1px 0 0', fontSize: 11, color: 'var(--text-3)' }}>{r.category} · {r.date}</p>
             </div>
             <span style={{ fontSize: 14, fontWeight: 700, color: r.type === 'income' ? 'var(--green)' : 'var(--red)', fontVariantNumeric: 'tabular-nums' }}>
-              {r.type === 'income' ? '+' : '-'}${r.amount.toFixed(2)}
+              {r.type === 'income' ? '+' : '-'}Rs. {r.amount.toFixed(2)}
             </span>
             <button onClick={() => remove(r.id)} className="btn-icon"><Trash2 size={13} /></button>
           </div>

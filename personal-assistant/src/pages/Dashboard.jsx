@@ -2,6 +2,25 @@ import { useEffect, useState } from 'react';
 import { db } from '../db/db';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
+import { dateConfigMap } from 'nepali-date-converter';
+
+const BS_MONTHS_NP = ['बैशाख','जेठ','असार','श्रावण','भाद्र','आश्विन','कार्तिक','मंसिर','पौष','माघ','फाल्गुन','चैत्र'];
+const DN = ['०','१','२','३','४','५','६','७','८','९'];
+const toDevanagari = (n) => String(n).replace(/\d/g, d => DN[d]);
+
+function adToBS(adDate) {
+  const refAD = new Date(1943, 3, 14);
+  const diffDays = Math.floor((adDate - refAD) / 86400000);
+  let remaining = diffDays;
+  for (let y = 2000; y <= 2090; y++) {
+    const months = Object.values(dateConfigMap[y] || {});
+    for (let m = 0; m < 12; m++) {
+      if (remaining < months[m]) return { year: y, month: m, day: 1 + remaining };
+      remaining -= months[m];
+    }
+  }
+  return { year: 2090, month: 0, day: 1 };
+}
 
 function greeting() {
   const h = new Date().getHours();
@@ -48,9 +67,14 @@ export default function Dashboard() {
         marginBottom: 28, overflow: 'hidden',
       }}>
         <div style={{ padding: '28px 32px' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--text-3)', margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--text-3)', margin: '0 0 2px' }}>
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
+          {(() => { const bs = adToBS(new Date()); return (
+            <p style={{ fontSize: 11, color: 'var(--blue)', fontWeight: 600, margin: '0 0 6px', letterSpacing: '0.2px' }}>
+              {BS_MONTHS_NP[bs.month]} {toDevanagari(bs.day)}, {toDevanagari(bs.year)} BS
+            </p>
+          ); })()}
           <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text)', margin: '0 0 4px' }}>{greeting()}</h1>
           <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0 }}>
             {todos.length} task{todos.length !== 1 ? 's' : ''} pending · {habits.length} habits tracked

@@ -330,6 +330,10 @@ textarea.input { resize: none; line-height: 1.65; }
   60%  { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
 
 /* ─── DIVIDER ────────────────────────────────────────────────────────────── */
 .divider { height: 1px; background: var(--border); }
